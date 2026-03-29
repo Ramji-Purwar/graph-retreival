@@ -53,11 +53,25 @@ print(f"Loaded {len(dataset)} graphs | embeddings: {embeddings.shape}")
 
 def graph_info(idx):
     g = dataset[idx]
+    edge_index = g.edge_index.cpu().numpy()
+    # Build unique undirected edges
+    seen = set()
+    edges_list = []
+    for col in range(edge_index.shape[1]):
+        u, v = int(edge_index[0, col]), int(edge_index[1, col])
+        key = (min(u, v), max(u, v))
+        if key not in seen:
+            seen.add(key)
+            edges_list.append({"from": u, "to": v})
     return {
         "index":  int(idx),
         "nodes":  int(g.num_nodes),
         "edges":  int(g.num_edges),
         "label":  int(g.y.item()),
+        "topology": {
+            "nodes": list(range(g.num_nodes)),
+            "edges": edges_list,
+        },
     }
 
 
