@@ -1,10 +1,5 @@
 import numpy as np
 from collections import defaultdict
-from core.dataset import load_jsonl
-from core.model import GINEncoder
-from core.train import embed_all
-import torch
-
 
 class LSHIndex:
     def __init__(self, dim=64, n_tables=10, n_funcs=4, w=1.0):
