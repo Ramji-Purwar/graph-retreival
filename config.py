@@ -13,10 +13,10 @@ CONFIGS = {
     },
     "proteins": {
         "path": "data/proteins/full.jsonl",
-        "in_dim": 7,
+        "in_dim": 3,
         "hidden_dim": 64,
         "out_dim": 64,
-        "num_layer": 3,
+        "num_layers": 3,
         "epochs": 50,
         "n_tables": 10,
         "n_funcs": 4,
