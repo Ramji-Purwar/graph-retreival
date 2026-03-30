@@ -35,4 +35,16 @@ CONFIGS = {
         "w": 1.0,
         "k": 5,
     },
+    "aids": {
+        "path": "data/aids/full.jsonl",
+        "in_dim": 38,
+        "hidden_dim": 64,
+        "out_dim": 64,
+        "num_layers": 3,
+        "epochs": 50,
+        "n_tables": 10,
+        "n_funcs": 4,
+        "w": 1.0,
+        "k": 5,
+    },
 }
