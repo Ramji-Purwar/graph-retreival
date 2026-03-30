@@ -129,7 +129,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="mutag",
-                        choices=["mutag"])
+                        choices=["aids", "imdb-binary", "mutag", "proteins", "reddit-binary"])
     parser.add_argument("--k", type=int, default=5)
     args = parser.parse_args()
     evaluate(args.dataset, k=args.k)

@@ -72,7 +72,7 @@ def main(dataset_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="mutag",
-                        choices=["mutag", "proteins"],
+                        choices=["aids", "imdb-binary", "mutag", "proteins", "reddit-binary"],
                         help="Dataset to run the pipeline on")
     args = parser.parse_args()
     main(args.dataset)
