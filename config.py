@@ -25,7 +25,7 @@ CONFIGS = {
     },
     "imdb-binary": {
         "path": "data/imdb-binary/full.jsonl",
-        "in_dim": 30,
+        "in_dim": 31,
         "hidden_dim": 64,
         "out_dim": 64,
         "num_layers": 3,
