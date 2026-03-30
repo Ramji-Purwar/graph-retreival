@@ -18,7 +18,7 @@ def main(dataset_name):
     print(f"Config  : {cfg}\n")
 
     # Load dataset
-    dataset = load_jsonl(cfg["path"])
+    dataset = load_jsonl(cfg["path"], max_degree=cfg["max_degree"])
     print(f"Loaded {len(dataset)} graphs")
 
     # Train model

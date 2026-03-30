@@ -2,6 +2,7 @@ CONFIGS = {
     "mutag": {
         "path": "data/mutag/full.jsonl",
         "in_dim": 7,
+        "max_degree": 29,
         "hidden_dim": 64,
         "out_dim": 64,
         "num_layers": 3,
@@ -14,6 +15,7 @@ CONFIGS = {
     "proteins": {
         "path": "data/proteins/full.jsonl",
         "in_dim": 3,
+        "max_degree": 29,
         "hidden_dim": 64,
         "out_dim": 64,
         "num_layers": 3,
@@ -26,6 +28,7 @@ CONFIGS = {
     "imdb-binary": {
         "path": "data/imdb-binary/full.jsonl",
         "in_dim": 31,
+        "max_degree": 30,
         "hidden_dim": 64,
         "out_dim": 64,
         "num_layers": 3,
@@ -38,6 +41,20 @@ CONFIGS = {
     "aids": {
         "path": "data/aids/full.jsonl",
         "in_dim": 38,
+        "max_degree": 29,
+        "hidden_dim": 64,
+        "out_dim": 64,
+        "num_layers": 3,
+        "epochs": 50,
+        "n_tables": 10,
+        "n_funcs": 4,
+        "w": 1.0,
+        "k": 5,
+    },
+    "reddit-binary": {
+        "path": "data/reddit-binary/full.jsonl",
+        "in_dim": 11,
+        "max_degree": 10,
         "hidden_dim": 64,
         "out_dim": 64,
         "num_layers": 3,

@@ -3,7 +3,7 @@ import torch
 from torch_geometric.data import Data
 from torch_geometric.utils import degree
 
-def load_jsonl(path, max_degree=30):
+def load_jsonl(path, max_degree):
     dataset = []
     with open(path, 'r') as f:
         for line in f:
