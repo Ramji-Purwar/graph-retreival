@@ -10,10 +10,14 @@ def load_jsonl(path):
 
             x = torch.tensor(rec['node_feat'], dtype=torch.float)
             edge_index = torch.tensor(rec['edge_index'], dtype=torch.long)
-            edge_attr = torch.tensor(rec['edge_attr'], dtype=torch.float)
             y = torch.tensor(rec['y'], dtype=torch.long)
 
-            data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
+            if 'edge_attr' in rec:
+                edge_attr = torch.tensor(rec['edge_attr'], dtype=torch.float)
+                data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
+            else:
+                data = Data(x=x, edge_index=edge_index, y=y)
+            
             dataset.append(data)
     
     return dataset
