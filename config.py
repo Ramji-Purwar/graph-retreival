@@ -11,6 +11,8 @@ CONFIGS = {
         "n_funcs": 4,
         "w": 1.0,
         "k": 5,
+        "ged_method": "exact",
+        "ged_beam_width": None,
     },
     "proteins": {
         "path": "data/proteins/full.jsonl",
@@ -24,6 +26,8 @@ CONFIGS = {
         "n_funcs": 4,
         "w": 1.0,
         "k": 5,
+        "ged_method": "exact",
+        "ged_beam_width": None,
     },
     "imdb-binary": {
         "path": "data/imdb-binary/full.jsonl",
@@ -37,6 +41,8 @@ CONFIGS = {
         "n_funcs": 4,
         "w": 1.0,
         "k": 5,
+        "ged_method": "beam",
+        "ged_beam_width": 20,
     },
     "aids": {
         "path": "data/aids/full.jsonl",
@@ -50,6 +56,8 @@ CONFIGS = {
         "n_funcs": 4,
         "w": 1.0,
         "k": 5,
+        "ged_method": "exact",
+        "ged_beam_width": None,
     },
     "reddit-binary": {
         "path": "data/reddit-binary/full.jsonl",
@@ -63,5 +71,7 @@ CONFIGS = {
         "n_funcs": 4,
         "w": 1.0,
         "k": 5,
+        "ged_method": "beam",
+        "ged_beam_width": 20,
     },
 }
