@@ -11,7 +11,7 @@ from core.train import train, embed_all
 from core.lsh import LSHIndex
 
 
-def main(dataset_name):
+def main(dataset_name, gpu_id: int = 0):
     # Load config
     cfg = CONFIGS[dataset_name]
     print(f"\nDataset : {dataset_name}")
@@ -21,9 +21,16 @@ def main(dataset_name):
     dataset = load_jsonl(cfg["path"], max_degree=cfg["max_degree"])
     print(f"Loaded {len(dataset)} graphs")
 
-    # Train model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device  : {device}\n")
+    # Device selection
+    if torch.cuda.is_available():
+        device = torch.device(f"cuda:{gpu_id}")
+        torch.cuda.set_device(device)
+        props = torch.cuda.get_device_properties(device)
+        total_mem_gb = props.total_memory / 1024**3
+        print(f"Device  : {device}  [{props.name}  {total_mem_gb:.1f} GB VRAM]\n")
+    else:
+        device = torch.device("cpu")
+        print(f"Device  : cpu  (no CUDA detected)\n")
 
     model = GINEncoder(
         in_dim     = cfg["in_dim"],
@@ -75,5 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="mutag",
                         choices=["aids", "imdb-binary", "mutag", "proteins", "reddit-binary"],
                         help="Dataset to run the pipeline on")
+    parser.add_argument("--gpu", type=int, default=0,
+                        help="GPU index to use (default: 0). Ignored when no CUDA is available.")
     args = parser.parse_args()
-    main(args.dataset)
+    main(args.dataset, gpu_id=args.gpu)

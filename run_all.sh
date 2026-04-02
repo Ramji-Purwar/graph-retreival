@@ -1,19 +1,14 @@
 #!/usr/bin/env bash
 # run_all.sh — Full pipeline: train → evaluate → ablate, all 5 datasets
-# Saves all stdout/stderr to logs/run_all.log
+
 
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-LOG_DIR="$ROOT/logs"
-mkdir -p "$LOG_DIR"
-
-LOG="$LOG_DIR/run_all.log"
-exec > >(tee -a "$LOG") 2>&1
 
 echo "============================================================"
 echo " Graph Retrieval — Full Pipeline Run"
 echo " Started: $(date)"
-echo " Log: $LOG"
+
 echo "============================================================"
 
 DATASETS=(mutag aids imdb-binary proteins reddit-binary)
@@ -21,32 +16,56 @@ DATASETS=(mutag aids imdb-binary proteins reddit-binary)
 # ── Phase 1: Train (with GED-based triplet oracle) ───────────────────────────
 echo ""
 echo "==== PHASE 1: TRAINING ===="
-for ds in "${DATASETS[@]}"; do
-    echo ""
-    echo "---- Training: $ds  [$(date +%H:%M:%S)] ----"
-    python3 "$ROOT/main.py" --dataset "$ds"
-    echo "---- Done: $ds  [$(date +%H:%M:%S)] ----"
-done
+
+echo "---- Training: mutag on GPU 0 & aids on GPU 1 ----"
+python3 "$ROOT/main.py" --dataset mutag --gpu 0 &
+python3 "$ROOT/main.py" --dataset aids --gpu 1 &
+wait
+
+echo "---- Training: imdb-binary on GPU 0 & proteins on GPU 1 ----"
+python3 "$ROOT/main.py" --dataset imdb-binary --gpu 0 &
+python3 "$ROOT/main.py" --dataset proteins --gpu 1 &
+wait
+
+echo "---- Training: reddit-binary on GPU 0 ----"
+python3 "$ROOT/main.py" --dataset reddit-binary --gpu 0 &
+wait
 
 # ── Phase 2: Evaluate (with GED ground truth) ────────────────────────────────
 echo ""
 echo "==== PHASE 2: EVALUATION (GED ground truth) ===="
-for ds in "${DATASETS[@]}"; do
-    echo ""
-    echo "---- Evaluating: $ds  [$(date +%H:%M:%S)] ----"
-    python3 "$ROOT/evaluate.py" --dataset "$ds" --mode both --gt ged
-    echo "---- Done: $ds  [$(date +%H:%M:%S)] ----"
-done
+
+echo "---- Evaluating: mutag on GPU 0 & aids on GPU 1 ----"
+CUDA_VISIBLE_DEVICES=0 python3 "$ROOT/evaluate.py" --dataset mutag --mode both --gt ged &
+CUDA_VISIBLE_DEVICES=1 python3 "$ROOT/evaluate.py" --dataset aids --mode both --gt ged &
+wait
+
+echo "---- Evaluating: imdb-binary on GPU 0 & proteins on GPU 1 ----"
+CUDA_VISIBLE_DEVICES=0 python3 "$ROOT/evaluate.py" --dataset imdb-binary --mode both --gt ged &
+CUDA_VISIBLE_DEVICES=1 python3 "$ROOT/evaluate.py" --dataset proteins --mode both --gt ged &
+wait
+
+echo "---- Evaluating: reddit-binary on GPU 0 ----"
+CUDA_VISIBLE_DEVICES=0 python3 "$ROOT/evaluate.py" --dataset reddit-binary --mode both --gt ged &
+wait
 
 # ── Phase 3: LSH Ablation ────────────────────────────────────────────────────
 echo ""
 echo "==== PHASE 3: LSH ABLATION ===="
-for ds in "${DATASETS[@]}"; do
-    echo ""
-    echo "---- Ablating: $ds  [$(date +%H:%M:%S)] ----"
-    python3 "$ROOT/ablate_lsh.py" --dataset "$ds" --gt ged
-    echo "---- Done: $ds  [$(date +%H:%M:%S)] ----"
-done
+
+echo "---- Ablating: mutag on GPU 0 & aids on GPU 1 ----"
+CUDA_VISIBLE_DEVICES=0 python3 "$ROOT/ablate_lsh.py" --dataset mutag --gt ged &
+CUDA_VISIBLE_DEVICES=1 python3 "$ROOT/ablate_lsh.py" --dataset aids --gt ged &
+wait
+
+echo "---- Ablating: imdb-binary on GPU 0 & proteins on GPU 1 ----"
+CUDA_VISIBLE_DEVICES=0 python3 "$ROOT/ablate_lsh.py" --dataset imdb-binary --gt ged &
+CUDA_VISIBLE_DEVICES=1 python3 "$ROOT/ablate_lsh.py" --dataset proteins --gt ged &
+wait
+
+echo "---- Ablating: reddit-binary on GPU 0 ----"
+CUDA_VISIBLE_DEVICES=0 python3 "$ROOT/ablate_lsh.py" --dataset reddit-binary --gt ged &
+wait
 
 echo ""
 echo "============================================================"

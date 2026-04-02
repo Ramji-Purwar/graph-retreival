@@ -2,6 +2,8 @@ import os
 import time
 import numpy as np
 from tqdm import tqdm
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from core.ged import exact_ged, beam_search_ged
 
@@ -28,37 +30,64 @@ def _compute_ged(g1, g2, method: str, beam_width: int) -> float:
         return beam_search_ged(g1, g2, beam_width=beam_width)
 
 
+# ---------------------------------------------------------------------------
+# Worker function – must be module-level (picklable) for multiprocessing
+# ---------------------------------------------------------------------------
+def _ged_worker(args):
+    """Called in a subprocess; returns (i, j, ged_value)."""
+    i, j, g1, g2, method, beam_width = args
+    value = _compute_ged(g1, g2, method, beam_width)
+    return i, j, value
+
+
 def compute_ged_matrix(
     dataset,
     method: str,
     beam_width: int = EVAL_BEAM_WIDTH,
     verbose: bool = True,
+    n_workers: int = None,          # None → use all CPU cores
 ) -> np.ndarray:
 
-    N = len(dataset)
+    N        = len(dataset)
     ged_matrix = np.zeros((N, N), dtype=np.float32)
+    pairs    = [(i, j) for i in range(N) for j in range(i + 1, N)]
 
-    pairs = [(i, j) for i in range(N) for j in range(i + 1, N)]
+    if n_workers is None:
+        n_workers = multiprocessing.cpu_count()
 
     if verbose:
         skipped = sum(
             1 for i, j in pairs
-            if dataset[i].num_nodes > MAX_NODES_FOR_GED or dataset[j].num_nodes > MAX_NODES_FOR_GED
+            if dataset[i].num_nodes > MAX_NODES_FOR_GED
+            or dataset[j].num_nodes > MAX_NODES_FOR_GED
         )
         print(f"Computing {method} GED for {N} graphs ({len(pairs):,} pairs) "
-              f"[{skipped:,} pairs exceed {MAX_NODES_FOR_GED}-node limit → label proxy]...")
+              f"[{skipped:,} pairs exceed {MAX_NODES_FOR_GED}-node limit → label proxy]  "
+              f"workers={n_workers}...")
         t0 = time.time()
 
-    iterator = tqdm(pairs, desc=f"GED ({method})", disable=not verbose)
+    # Build args list (graph objects need to be sent to subprocesses)
+    work = [
+        (i, j, dataset[i], dataset[j], method, beam_width)
+        for i, j in pairs
+    ]
 
-    for i, j in iterator:
-        g = _compute_ged(dataset[i], dataset[j], method, beam_width)
-        ged_matrix[i, j] = g
-        ged_matrix[j, i] = g
+    with ProcessPoolExecutor(max_workers=n_workers) as executor:
+        futures = {executor.submit(_ged_worker, args): args for args in work}
+        iterator = tqdm(
+            as_completed(futures),
+            total=len(pairs),
+            desc=f"GED ({method}, {n_workers} workers)",
+            disable=not verbose,
+        )
+        for future in iterator:
+            i, j, val = future.result()
+            ged_matrix[i, j] = val
+            ged_matrix[j, i] = val
 
     if verbose:
         elapsed = time.time() - t0
-        print(f"Done in {elapsed:.1f}s")
+        print(f"Done in {elapsed:.1f}s  (parallel, {n_workers} workers)")
 
     return ged_matrix
 

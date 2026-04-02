@@ -4,6 +4,7 @@ import numpy as np
 import random
 import os
 from torch_geometric.loader import DataLoader
+from torch_geometric.data import Batch
 from core.model import GINEncoder
 from core.dataset import load_jsonl
 
@@ -101,19 +102,42 @@ def build_or_load_train_ged_matrix(dataset, dataset_name: str):
 
 
 def embed_all(model, dataset, device):
-    loader = DataLoader(dataset, batch_size=32)
+    use_pin = device.type == "cuda"
+    loader = DataLoader(
+        dataset,
+        batch_size=256,
+        num_workers=4,
+        pin_memory=use_pin,
+    )
     model.eval()
     embeddings = []
     with torch.no_grad():
         for batch in loader:
-            batch = batch.to(device)
+            batch = batch.to(device, non_blocking=use_pin)
             z = model(batch.x, batch.edge_index, batch.batch)
             embeddings.append(z.cpu())
     return torch.cat(embeddings)
 
-def train(model, dataset, device, epochs=50, dataset_name: str = None, use_ged: bool = True):
+def _batch_encode(model, indices, dataset, device):
+    """Encode a list of graph indices as a single batched GPU forward pass."""
+    graphs = [dataset[i] for i in indices]
+    batch  = Batch.from_data_list(graphs).to(device)
+    return model(batch.x, batch.edge_index, batch.batch)   # (len(indices), out_dim)
+
+
+def train(
+    model,
+    dataset,
+    device,
+    epochs: int = 50,
+    dataset_name: str = None,
+    use_ged: bool = True,
+    triplet_batch_size: int = 64,   # how many triplets per GPU forward pass
+):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_fn   = nn.TripletMarginLoss(margin=1.0)
+
+    print(f"[train] Device : {device}")
 
     # Build / load training oracle
     ged_matrix, ged_threshold = None, None
@@ -125,33 +149,42 @@ def train(model, dataset, device, epochs=50, dataset_name: str = None, use_ged: 
 
     oracle = "GED (B=5)" if ged_matrix is not None else "class label"
     print(f"[train] Triplet oracle : {oracle}")
+    print(f"[train] Triplet batch  : {triplet_batch_size}")
+
+    scaler = torch.amp.GradScaler(enabled=(device.type == "cuda"))
 
     for epoch in range(epochs):
         model.train()
-        triplets   = sample_triplets(dataset, n=512,
-                                     ged_matrix=ged_matrix,
-                                     threshold=ged_threshold)
-        total_loss = 0
+        triplets = sample_triplets(
+            dataset, n=512,
+            ged_matrix=ged_matrix,
+            threshold=ged_threshold,
+        )
+        total_loss = 0.0
+        n_batches  = 0
 
-        for a_i, p_i, n_i in triplets:
-            a_data = dataset[a_i].to(device)
-            p_data = dataset[p_i].to(device)
-            n_data = dataset[n_i].to(device)
+        # Process triplets in mini-batches for efficient GPU utilisation
+        for batch_start in range(0, len(triplets), triplet_batch_size):
+            batch_triplets = triplets[batch_start : batch_start + triplet_batch_size]
+            a_idx = [t[0] for t in batch_triplets]
+            p_idx = [t[1] for t in batch_triplets]
+            n_idx = [t[2] for t in batch_triplets]
 
-            ba = torch.zeros(a_data.num_nodes, dtype=torch.long, device=device)
-            bp = torch.zeros(p_data.num_nodes, dtype=torch.long, device=device)
-            bn = torch.zeros(n_data.num_nodes, dtype=torch.long, device=device)
-
-            za = model(a_data.x, a_data.edge_index, ba)
-            zp = model(p_data.x, p_data.edge_index, bp)
-            zn = model(n_data.x, n_data.edge_index, bn)
-
-            loss = loss_fn(za, zp, zn)
             optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
+            with torch.amp.autocast(device_type=device.type,
+                                    enabled=(device.type == "cuda")):
+                za = _batch_encode(model, a_idx, dataset, device)
+                zp = _batch_encode(model, p_idx, dataset, device)
+                zn = _batch_encode(model, n_idx, dataset, device)
+                loss = loss_fn(za, zp, zn)
 
-        print(f"Epoch {epoch+1:02d} | Loss: {total_loss/len(triplets):.4f}")
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            total_loss += loss.item()
+            n_batches  += 1
+
+        print(f"Epoch {epoch+1:02d} | Loss: {total_loss/n_batches:.4f}")
 
     return model
