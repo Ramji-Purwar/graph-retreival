@@ -7,8 +7,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from core.ged import exact_ged, beam_search_ged
 
-EXACT_GED_DATASETS  = {"mutag", "aids", "proteins"}
-BEAM_GED_DATASETS   = {"imdb-binary", "reddit-binary"}
+EXACT_GED_DATASETS  = {"mutag"}
+BEAM_GED_DATASETS   = {"aids", "proteins", "imdb-binary", "reddit-binary"}
 
 EVAL_BEAM_WIDTH = 20
 TRAIN_BEAM_WIDTH = 5
