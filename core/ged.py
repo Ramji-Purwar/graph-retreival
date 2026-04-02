@@ -1,4 +1,3 @@
-import math
 import heapq
 import networkx as nx
 import torch
@@ -94,8 +93,6 @@ def _beam_ged_nx(G1: nx.Graph, G2: nx.Graph, beam_width: int) -> float:
     if n2 == 0:
         return float(n1 + G1.number_of_edges())
 
-    idx1 = {u: i for i, u in enumerate(nodes1)}
-    idx2 = {v: j for j, v in enumerate(nodes2)}
     adj1 = nx.to_numpy_array(G1, nodelist=nodes1)
     adj2 = nx.to_numpy_array(G2, nodelist=nodes2)
     attrs1 = [G1.nodes[u] for u in nodes1]

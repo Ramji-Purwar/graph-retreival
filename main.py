@@ -32,7 +32,8 @@ def main(dataset_name):
         num_layers = cfg["num_layers"],
     ).to(device)
 
-    model = train(model, dataset, device, epochs=cfg["epochs"])
+    model = train(model, dataset, device, epochs=cfg["epochs"],
+                  dataset_name=dataset_name, use_ged=True)
 
     # Embed all graphs
     embeddings = embed_all(model, dataset, device).numpy()

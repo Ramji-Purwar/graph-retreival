@@ -5,14 +5,23 @@ from tqdm import tqdm
 
 from core.ged import exact_ged, beam_search_ged
 
-EXACT_GED_DATASETS = {"mutag", "aids", "proteins"}
-BEAM_GED_DATASETS = {"imdb-binary", "reddit-binary"}
+EXACT_GED_DATASETS  = {"mutag", "aids", "proteins"}
+BEAM_GED_DATASETS   = {"imdb-binary", "reddit-binary"}
 
 EVAL_BEAM_WIDTH = 20
 TRAIN_BEAM_WIDTH = 5
+MAX_NODES_FOR_GED = 60   # pairs where EITHER graph has more nodes fall back to label proxy
 
 
 def _compute_ged(g1, g2, method: str, beam_width: int) -> float:
+    # Size guard: skip expensive GED for large graphs and use label proxy instead
+    if g1.num_nodes > MAX_NODES_FOR_GED or g2.num_nodes > MAX_NODES_FOR_GED:
+        # Same class  → treat as structurally similar  (GED = 0)
+        # Diff class  → treat as dissimilar             (GED = large)
+        lbl1 = g1.y.item() if g1.y is not None else -1
+        lbl2 = g2.y.item() if g2.y is not None else -2
+        return 0.0 if lbl1 == lbl2 else float(MAX_NODES_FOR_GED * 4)
+
     if method == "exact":
         return exact_ged(g1, g2)
     else:
@@ -30,10 +39,14 @@ def compute_ged_matrix(
     ged_matrix = np.zeros((N, N), dtype=np.float32)
 
     pairs = [(i, j) for i in range(N) for j in range(i + 1, N)]
-    total = len(pairs)
 
     if verbose:
-        print(f"Computing {method} GED for {N} graphs ({total} pairs)...")
+        skipped = sum(
+            1 for i, j in pairs
+            if dataset[i].num_nodes > MAX_NODES_FOR_GED or dataset[j].num_nodes > MAX_NODES_FOR_GED
+        )
+        print(f"Computing {method} GED for {N} graphs ({len(pairs):,} pairs) "
+              f"[{skipped:,} pairs exceed {MAX_NODES_FOR_GED}-node limit → label proxy]...")
         t0 = time.time()
 
     iterator = tqdm(pairs, desc=f"GED ({method})", disable=not verbose)
