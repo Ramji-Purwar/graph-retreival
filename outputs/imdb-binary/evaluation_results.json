@@ -1,98 +1,133 @@
 {
     "dataset": "imdb-binary",
     "mode": "both",
+    "gt_meta": {
+        "type": "ged",
+        "method": "beam",
+        "threshold": 61.0
+    },
     "metrics": {
         "trained": {
             "5": {
                 "lsh": {
-                    "Precision@k": 0.69045,
-                    "Recall@k": 0.006042084168336672,
-                    "MAP": 0.005682598530394121,
-                    "Approx Quality": 0.386,
-                    "Query Time(ms)": 0.10028553009033203
+                    "Precision@k": 0.8406166666666667,
+                    "Recall@k": 0.01434796497069993,
+                    "MAP": 0.013246021396116196,
+                    "Approx Quality": 0.4304,
+                    "Query Time(ms)": 0.09175729751586914
                 },
                 "bf": {
-                    "Precision@k": 0.7308000000000001,
-                    "Recall@k": 0.007322645290581161,
-                    "MAP": 0.00681132264529058,
-                    "Query Time(ms)": 0.07637906074523926
+                    "Precision@k": 0.8866,
+                    "Recall@k": 0.021715904522942836,
+                    "MAP": 0.01798026312765571,
+                    "Query Time(ms)": 0.12869000434875488
+                },
+                "index": {
+                    "construction_time_s": 0.0627,
+                    "table_mem_bytes": 185280,
+                    "table_mem_kb": 180.94
                 }
             },
             "10": {
                 "lsh": {
-                    "Precision@k": 0.6801309523809523,
-                    "Recall@k": 0.012084168336673346,
-                    "MAP": 0.010927547953048953,
-                    "Approx Quality": 0.404,
-                    "Query Time(ms)": 0.09997820854187012
+                    "Precision@k": 0.828829761904762,
+                    "Recall@k": 0.0263000159042977,
+                    "MAP": 0.02303815832064676,
+                    "Approx Quality": 0.43750000000000006,
+                    "Query Time(ms)": 0.08959078788757324
                 },
                 "bf": {
-                    "Precision@k": 0.7082999999999999,
-                    "Recall@k": 0.014194388777555108,
-                    "MAP": 0.012494869103285936,
-                    "Query Time(ms)": 0.0763387680053711
+                    "Precision@k": 0.8857,
+                    "Recall@k": 0.04143715452830752,
+                    "MAP": 0.03258157447332549,
+                    "Query Time(ms)": 0.12405228614807129
+                },
+                "index": {
+                    "construction_time_s": 0.0627,
+                    "table_mem_bytes": 185280,
+                    "table_mem_kb": 180.94
                 }
             },
             "20": {
                 "lsh": {
-                    "Precision@k": 0.6738180456798104,
-                    "Recall@k": 0.023208416833667332,
-                    "MAP": 0.02026353509233968,
-                    "Approx Quality": 0.4126,
-                    "Query Time(ms)": 0.10055088996887207
+                    "Precision@k": 0.8219406907076411,
+                    "Recall@k": 0.04389676305400564,
+                    "MAP": 0.03778763554402788,
+                    "Approx Quality": 0.39794999999999997,
+                    "Query Time(ms)": 0.08977818489074707
                 },
                 "bf": {
-                    "Precision@k": 0.71775,
-                    "Recall@k": 0.02876753507014028,
-                    "MAP": 0.024633264519257785,
-                    "Query Time(ms)": 0.07645511627197266
+                    "Precision@k": 0.8716499999999998,
+                    "Recall@k": 0.07404567705929435,
+                    "MAP": 0.057698436516772006,
+                    "Query Time(ms)": 0.12494611740112305
+                },
+                "index": {
+                    "construction_time_s": 0.0627,
+                    "table_mem_bytes": 185280,
+                    "table_mem_kb": 180.94
                 }
             }
         },
         "untrained": {
             "5": {
                 "lsh": {
-                    "Precision@k": 0.4182,
-                    "Recall@k": 0.002773547094188377,
-                    "MAP": 0.002512358049432197,
-                    "Approx Quality": 0.2924,
-                    "Query Time(ms)": 0.0436396598815918
+                    "Precision@k": 0.88475,
+                    "Recall@k": 0.021916641753008708,
+                    "MAP": 0.020577010867929787,
+                    "Approx Quality": 0.7152000000000001,
+                    "Query Time(ms)": 0.36460399627685547
                 },
                 "bf": {
-                    "Precision@k": 0.6624000000000001,
-                    "Recall@k": 0.006637274549098196,
-                    "MAP": 0.00577000668002672,
-                    "Query Time(ms)": 0.07050466537475586
+                    "Precision@k": 0.873,
+                    "Recall@k": 0.02600143332972589,
+                    "MAP": 0.023134536103719423,
+                    "Query Time(ms)": 0.12769484519958496
+                },
+                "index": {
+                    "construction_time_s": 0.0525,
+                    "table_mem_bytes": 6992,
+                    "table_mem_kb": 6.83
                 }
             },
             "10": {
                 "lsh": {
-                    "Precision@k": 0.4184603174603175,
-                    "Recall@k": 0.004913827655310622,
-                    "MAP": 0.004245709673314884,
-                    "Approx Quality": 0.29830000000000007,
-                    "Query Time(ms)": 0.04360628128051758
+                    "Precision@k": 0.8696666666666667,
+                    "Recall@k": 0.043551917849192295,
+                    "MAP": 0.03896483726014365,
+                    "Approx Quality": 0.8186000000000001,
+                    "Query Time(ms)": 0.36891603469848633
                 },
                 "bf": {
-                    "Precision@k": 0.6466999999999999,
-                    "Recall@k": 0.01295991983967936,
-                    "MAP": 0.010614241976015522,
-                    "Query Time(ms)": 0.07038688659667969
+                    "Precision@k": 0.8589000000000001,
+                    "Recall@k": 0.045942290707478205,
+                    "MAP": 0.040334965424312405,
+                    "Query Time(ms)": 0.12885522842407227
+                },
+                "index": {
+                    "construction_time_s": 0.0525,
+                    "table_mem_bytes": 6992,
+                    "table_mem_kb": 6.83
                 }
             },
             "20": {
                 "lsh": {
-                    "Precision@k": 0.41376102786102786,
-                    "Recall@k": 0.006803607214428857,
-                    "MAP": 0.005651827000287931,
-                    "Approx Quality": 0.22540000000000002,
-                    "Query Time(ms)": 0.04420065879821777
+                    "Precision@k": 0.8398947368421054,
+                    "Recall@k": 0.07817860847331366,
+                    "MAP": 0.06962225752525478,
+                    "Approx Quality": 0.8972999999999999,
+                    "Query Time(ms)": 0.3723330497741699
                 },
                 "bf": {
-                    "Precision@k": 0.6304500000000001,
-                    "Recall@k": 0.0252685370741483,
-                    "MAP": 0.019624280327692957,
-                    "Query Time(ms)": 0.07129669189453125
+                    "Precision@k": 0.83385,
+                    "Recall@k": 0.08070811801980643,
+                    "MAP": 0.07013892025518642,
+                    "Query Time(ms)": 0.1305699348449707
+                },
+                "index": {
+                    "construction_time_s": 0.0525,
+                    "table_mem_bytes": 6992,
+                    "table_mem_kb": 6.83
                 }
             }
         }

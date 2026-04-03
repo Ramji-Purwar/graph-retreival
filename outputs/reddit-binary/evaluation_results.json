@@ -1,98 +1,133 @@
 {
     "dataset": "reddit-binary",
     "mode": "both",
+    "gt_meta": {
+        "type": "ged",
+        "method": "beam",
+        "threshold": 57.5
+    },
     "metrics": {
         "trained": {
             "5": {
                 "lsh": {
-                    "Precision@k": 0.670875,
-                    "Recall@k": 0.002643643643643644,
-                    "MAP": 0.002407741074407741,
-                    "Approx Quality": 0.6819000000000001,
-                    "Query Time(ms)": 0.2369474172592163
+                    "Precision@k": 0.844875,
+                    "Recall@k": 0.0034479762409972297,
+                    "MAP": 0.003283729476873871,
+                    "Approx Quality": 0.8000000000000002,
+                    "Query Time(ms)": 0.4832470417022705
                 },
                 "bf": {
-                    "Precision@k": 0.7374,
-                    "Recall@k": 0.0036906906906906903,
-                    "MAP": 0.003317901234567901,
-                    "Query Time(ms)": 0.1487363576889038
+                    "Precision@k": 0.8425,
+                    "Recall@k": 0.004297897560503309,
+                    "MAP": 0.004069352567505464,
+                    "Query Time(ms)": 0.29769110679626465
+                },
+                "index": {
+                    "construction_time_s": 0.1192,
+                    "table_mem_bytes": 7272,
+                    "table_mem_kb": 7.1
                 }
             },
             "10": {
                 "lsh": {
-                    "Precision@k": 0.6601676587301587,
-                    "Recall@k": 0.005733233233233234,
-                    "MAP": 0.004933721618443841,
-                    "Approx Quality": 0.7725500000000002,
-                    "Query Time(ms)": 0.2356959581375122
+                    "Precision@k": 0.8397222222222223,
+                    "Recall@k": 0.007708123567678894,
+                    "MAP": 0.007188887376223932,
+                    "Approx Quality": 0.9000000000000002,
+                    "Query Time(ms)": 0.47267258167266846
                 },
                 "bf": {
-                    "Precision@k": 0.7338,
-                    "Recall@k": 0.007345345345345345,
-                    "MAP": 0.006395128461795128,
-                    "Query Time(ms)": 0.14839494228363037
+                    "Precision@k": 0.8397,
+                    "Recall@k": 0.008564838174802898,
+                    "MAP": 0.007965302605016322,
+                    "Query Time(ms)": 0.3020472526550293
+                },
+                "index": {
+                    "construction_time_s": 0.1192,
+                    "table_mem_bytes": 7272,
+                    "table_mem_kb": 7.1
                 }
             },
             "20": {
                 "lsh": {
-                    "Precision@k": 0.6548177318295739,
-                    "Recall@k": 0.011843343343343344,
-                    "MAP": 0.009816769645768617,
-                    "Approx Quality": 0.81385,
-                    "Query Time(ms)": 0.23660409450531006
+                    "Precision@k": 0.8397368421052631,
+                    "Recall@k": 0.0162754615123179,
+                    "MAP": 0.014952546051296013,
+                    "Approx Quality": 0.9496249999999997,
+                    "Query Time(ms)": 0.47448980808258057
                 },
                 "bf": {
-                    "Precision@k": 0.73075,
-                    "Recall@k": 0.01462962962962963,
-                    "MAP": 0.012453758692479881,
-                    "Query Time(ms)": 0.14879977703094482
+                    "Precision@k": 0.839725,
+                    "Recall@k": 0.017130757874324998,
+                    "MAP": 0.01572506072871388,
+                    "Query Time(ms)": 0.297304630279541
+                },
+                "index": {
+                    "construction_time_s": 0.1192,
+                    "table_mem_bytes": 7272,
+                    "table_mem_kb": 7.1
                 }
             }
         },
         "untrained": {
             "5": {
                 "lsh": {
-                    "Precision@k": 0.0025,
-                    "Recall@k": 4.004004004004004e-06,
-                    "MAP": 4.004004004004004e-06,
-                    "Approx Quality": 0.0008,
-                    "Query Time(ms)": 0.044008851051330566
+                    "Precision@k": 0.758,
+                    "Recall@k": 0.0031008868412444484,
+                    "MAP": 0.0028566515105673666,
+                    "Approx Quality": 0.8000000000000002,
+                    "Query Time(ms)": 0.7398713827133179
                 },
                 "bf": {
-                    "Precision@k": 0.7675,
-                    "Recall@k": 0.0038413413413413413,
-                    "MAP": 0.0035367867867867864,
-                    "Query Time(ms)": 0.13596534729003906
+                    "Precision@k": 0.7553,
+                    "Recall@k": 0.003861346889754133,
+                    "MAP": 0.0035114229715407074,
+                    "Query Time(ms)": 0.26989543437957764
+                },
+                "index": {
+                    "construction_time_s": 0.104,
+                    "table_mem_bytes": 3040,
+                    "table_mem_kb": 2.97
                 }
             },
             "10": {
                 "lsh": {
-                    "Precision@k": 0.0025,
-                    "Recall@k": 4.004004004004004e-06,
-                    "MAP": 4.004004004004004e-06,
-                    "Approx Quality": 0.0004,
-                    "Query Time(ms)": 0.04335474967956543
+                    "Precision@k": 0.7411666666666668,
+                    "Recall@k": 0.0068170725205205385,
+                    "MAP": 0.006003963986656292,
+                    "Approx Quality": 0.9000000000000002,
+                    "Query Time(ms)": 0.7419489622116089
                 },
                 "bf": {
-                    "Precision@k": 0.7494000000000001,
-                    "Recall@k": 0.007501501501501501,
-                    "MAP": 0.0066652330902330905,
-                    "Query Time(ms)": 0.1357971429824829
+                    "Precision@k": 0.7404000000000001,
+                    "Recall@k": 0.007567149682833939,
+                    "MAP": 0.006619684432484963,
+                    "Query Time(ms)": 0.27279698848724365
+                },
+                "index": {
+                    "construction_time_s": 0.104,
+                    "table_mem_bytes": 3040,
+                    "table_mem_kb": 2.97
                 }
             },
             "20": {
                 "lsh": {
-                    "Precision@k": 0.0025,
-                    "Recall@k": 4.004004004004004e-06,
-                    "MAP": 4.004004004004004e-06,
-                    "Approx Quality": 0.0002,
-                    "Query Time(ms)": 0.04324626922607422
+                    "Precision@k": 0.7261315789473684,
+                    "Recall@k": 0.01410275650784928,
+                    "MAP": 0.01194146333951953,
+                    "Approx Quality": 0.9499999999999997,
+                    "Query Time(ms)": 0.7411748170852661
                 },
                 "bf": {
-                    "Precision@k": 0.7309,
-                    "Recall@k": 0.014632632632632632,
-                    "MAP": 0.012593963992803001,
-                    "Query Time(ms)": 0.13618242740631104
+                    "Precision@k": 0.725075,
+                    "Recall@k": 0.014823186033109163,
+                    "MAP": 0.012521037277245177,
+                    "Query Time(ms)": 0.270052433013916
+                },
+                "index": {
+                    "construction_time_s": 0.104,
+                    "table_mem_bytes": 3040,
+                    "table_mem_kb": 2.97
                 }
             }
         }
