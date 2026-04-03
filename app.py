@@ -42,7 +42,17 @@ def load_dataset_artifacts(dataset_name):
         out_dim    = cfg["out_dim"],
         num_layers = cfg["num_layers"],
     ).to(device)
-    model.load_state_dict(torch.load(f"{out_dir}/model.pt", map_location=device))
+    state_dict = torch.load(f"{out_dir}/model.pt", map_location=device)
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError as e:
+        # Backward-compatibility for checkpoints created before BatchNorm layers.
+        print(f"[{dataset_name}] Strict checkpoint load failed: {e}")
+        missing, unexpected = model.load_state_dict(state_dict, strict=False)
+        print(
+            f"[{dataset_name}] Loaded checkpoint with strict=False "
+            f"(missing={len(missing)}, unexpected={len(unexpected)})"
+        )
     model.eval()
 
     lsh = LSHIndex(
