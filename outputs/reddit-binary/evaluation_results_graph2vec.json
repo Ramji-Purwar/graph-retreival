@@ -1,0 +1,73 @@
+{
+    "dataset": "reddit-binary",
+    "mode": "graph2vec",
+    "gt_meta": {
+        "type": "ged",
+        "method": "beam",
+        "threshold": 57.5
+    },
+    "metrics": {
+        "graph2vec": {
+            "5": {
+                "lsh": {
+                    "Precision@k": 0.604125,
+                    "Recall@k": 0.0024722480947356375,
+                    "MAP": 0.0021279773248456383,
+                    "Approx Quality": 0.7215,
+                    "Query Time(ms)": 0.44693875312805176
+                },
+                "bf": {
+                    "Precision@k": 0.6007,
+                    "Recall@k": 0.0030736834847567337,
+                    "MAP": 0.0025693037243819427,
+                    "Query Time(ms)": 0.2658270597457886
+                },
+                "index": {
+                    "construction_time_s": 0.1134,
+                    "table_mem_bytes": 46960,
+                    "table_mem_kb": 45.86
+                }
+            },
+            "10": {
+                "lsh": {
+                    "Precision@k": 0.5952222222222223,
+                    "Recall@k": 0.005478617694890268,
+                    "MAP": 0.004254807428819653,
+                    "Approx Quality": 0.7674000000000001,
+                    "Query Time(ms)": 0.44827187061309814
+                },
+                "bf": {
+                    "Precision@k": 0.5932999999999999,
+                    "Recall@k": 0.006069064630610843,
+                    "MAP": 0.004662508890199224,
+                    "Query Time(ms)": 0.26515138149261475
+                },
+                "index": {
+                    "construction_time_s": 0.1134,
+                    "table_mem_bytes": 46960,
+                    "table_mem_kb": 45.86
+                }
+            },
+            "20": {
+                "lsh": {
+                    "Precision@k": 0.5785,
+                    "Recall@k": 0.011222113668987338,
+                    "MAP": 0.008021928085775946,
+                    "Approx Quality": 0.7587999999999999,
+                    "Query Time(ms)": 0.44866061210632324
+                },
+                "bf": {
+                    "Precision@k": 0.57605,
+                    "Recall@k": 0.0117656442353362,
+                    "MAP": 0.008392639890506207,
+                    "Query Time(ms)": 0.26516735553741455
+                },
+                "index": {
+                    "construction_time_s": 0.1134,
+                    "table_mem_bytes": 46960,
+                    "table_mem_kb": 45.86
+                }
+            }
+        }
+    }
+}

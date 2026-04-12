@@ -1,0 +1,73 @@
+{
+    "dataset": "imdb-binary",
+    "mode": "graph2vec",
+    "gt_meta": {
+        "type": "ged",
+        "method": "beam",
+        "threshold": 61.0
+    },
+    "metrics": {
+        "graph2vec": {
+            "5": {
+                "lsh": {
+                    "Precision@k": 0.81575,
+                    "Recall@k": 0.015162874708172961,
+                    "MAP": 0.014836588977175998,
+                    "Approx Quality": 0.706,
+                    "Query Time(ms)": 0.23389959335327148
+                },
+                "bf": {
+                    "Precision@k": 0.8232,
+                    "Recall@k": 0.01977996803019614,
+                    "MAP": 0.01926096117334886,
+                    "Query Time(ms)": 0.11908555030822754
+                },
+                "index": {
+                    "construction_time_s": 0.0573,
+                    "table_mem_bytes": 29992,
+                    "table_mem_kb": 29.29
+                }
+            },
+            "10": {
+                "lsh": {
+                    "Precision@k": 0.7692222222222221,
+                    "Recall@k": 0.029623935318682355,
+                    "MAP": 0.02832429082120925,
+                    "Approx Quality": 0.7375,
+                    "Query Time(ms)": 0.23409104347229004
+                },
+                "bf": {
+                    "Precision@k": 0.7812,
+                    "Recall@k": 0.035473670727308323,
+                    "MAP": 0.0341474405840868,
+                    "Query Time(ms)": 0.11971783638000488
+                },
+                "index": {
+                    "construction_time_s": 0.0573,
+                    "table_mem_bytes": 29992,
+                    "table_mem_kb": 29.29
+                }
+            },
+            "20": {
+                "lsh": {
+                    "Precision@k": 0.6978421052631579,
+                    "Recall@k": 0.04981502499613395,
+                    "MAP": 0.046395857579345064,
+                    "Approx Quality": 0.72915,
+                    "Query Time(ms)": 0.23674440383911133
+                },
+                "bf": {
+                    "Precision@k": 0.71315,
+                    "Recall@k": 0.056335625236130664,
+                    "MAP": 0.05291727746934662,
+                    "Query Time(ms)": 0.12198519706726074
+                },
+                "index": {
+                    "construction_time_s": 0.0573,
+                    "table_mem_bytes": 29992,
+                    "table_mem_kb": 29.29
+                }
+            }
+        }
+    }
+}
