@@ -29,7 +29,7 @@ os.makedirs(OUT, exist_ok=True)
 DATASETS = ["mutag", "proteins", "aids", "imdb-binary", "reddit-binary"]
 PRETTY = {"mutag": "MUTAG", "proteins": "PROTEINS", "aids": "AIDS",
            "imdb-binary": "IMDB-Binary", "reddit-binary": "Reddit-Binary"}
-COLORS = {"trained_lsh": "#2563eb", "trained_bf": "#16a34a", "untrained_lsh": "#dc2626"}
+COLORS = {"trained_lsh": "#2563eb", "trained_bf": "#16a34a", "untrained_lsh": "#dc2626", "graph2vec_lsh": "#f59e0b"}
 K_VALS = [5, 10, 20]
 
 
@@ -41,6 +41,14 @@ def load_eval(ds):
 def load_ablation(ds):
     with open(f"outputs/{ds}/lsh_ablation.json") as f:
         return json.load(f)
+
+
+def load_eval_g2v(ds):
+    path = f"outputs/{ds}/evaluation_results_graph2vec.json"
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)["metrics"]["graph2vec"]
+    return None
 
 
 # ========================================================================
@@ -62,10 +70,14 @@ def fig1_precision_comparison():
         t_lsh = [trained[str(k)]["lsh"]["Precision@k"] for k in K_VALS]
         t_bf  = [trained[str(k)]["bf"]["Precision@k"] for k in K_VALS]
         u_lsh = [untrained[str(k)]["lsh"]["Precision@k"] for k in K_VALS]
+        g2v = load_eval_g2v(ds)
 
         ax.plot(K_VALS, t_lsh, "o-", color=COLORS["trained_lsh"], label="Trained GIN + LSH", linewidth=2, markersize=6)
         ax.plot(K_VALS, t_bf, "s--", color=COLORS["trained_bf"], label="Trained GIN + BF", linewidth=2, markersize=6)
         ax.plot(K_VALS, u_lsh, "^:", color=COLORS["untrained_lsh"], label="Untrained GIN + LSH", linewidth=2, markersize=6)
+        if g2v:
+            g_lsh = [g2v[str(k)]["lsh"]["Precision@k"] for k in K_VALS]
+            ax.plot(K_VALS, g_lsh, "D-.", color=COLORS["graph2vec_lsh"], label="Graph2Vec + LSH", linewidth=2, markersize=6)
 
         ax.set_title(PRETTY[ds])
         ax.set_xlabel("k")
@@ -94,10 +106,14 @@ def fig2_map_comparison():
         t_lsh = [trained[str(k)]["lsh"]["MAP"] for k in K_VALS]
         t_bf  = [trained[str(k)]["bf"]["MAP"] for k in K_VALS]
         u_lsh = [untrained[str(k)]["lsh"]["MAP"] for k in K_VALS]
+        g2v = load_eval_g2v(ds)
 
         ax.plot(K_VALS, t_lsh, "o-", color=COLORS["trained_lsh"], label="Trained GIN + LSH", linewidth=2, markersize=6)
         ax.plot(K_VALS, t_bf, "s--", color=COLORS["trained_bf"], label="Trained GIN + BF", linewidth=2, markersize=6)
         ax.plot(K_VALS, u_lsh, "^:", color=COLORS["untrained_lsh"], label="Untrained GIN + LSH", linewidth=2, markersize=6)
+        if g2v:
+            g_lsh = [g2v[str(k)]["lsh"]["MAP"] for k in K_VALS]
+            ax.plot(K_VALS, g_lsh, "D-.", color=COLORS["graph2vec_lsh"], label="Graph2Vec + LSH", linewidth=2, markersize=6)
 
         ax.set_title(PRETTY[ds])
         ax.set_xlabel("k")
@@ -147,32 +163,38 @@ def fig4_query_time():
     fig.suptitle("Average Query Time at k=10 — LSH vs Brute-Force", fontweight="bold")
 
     x = np.arange(len(DATASETS))
-    w = 0.35
+    w = 0.25
 
     lsh_times = []
     bf_times = []
+    g2v_times = []
     for ds in DATASETS:
         data = load_eval(ds)
         trained = data["metrics"]["trained"]
         lsh_times.append(trained["10"]["lsh"]["Query Time(ms)"])
         bf_times.append(trained["10"]["bf"]["Query Time(ms)"])
+        g2v = load_eval_g2v(ds)
+        if g2v:
+            g2v_times.append(g2v["10"]["lsh"]["Query Time(ms)"])
+        else:
+            g2v_times.append(0.0)
 
-    bars1 = ax.bar(x - w/2, lsh_times, w, label="LSH-ANN", color="#2563eb", alpha=0.85)
-    bars2 = ax.bar(x + w/2, bf_times, w, label="Brute-Force", color="#16a34a", alpha=0.85)
+    bars1 = ax.bar(x - w, lsh_times, w, label="Trained GIN+LSH", color="#2563eb", alpha=0.85)
+    bars2 = ax.bar(x, bf_times, w, label="Trained GIN+BF", color="#16a34a", alpha=0.85)
+    bars3 = ax.bar(x + w, g2v_times, w, label="Graph2Vec+LSH", color="#f59e0b", alpha=0.85)
 
     ax.set_xticks(x)
     ax.set_xticklabels([PRETTY[ds] for ds in DATASETS])
     ax.set_ylabel("Query Time (ms)")
-    ax.legend()
+    ax.legend(fontsize=9)
     ax.grid(axis="y", alpha=0.3)
 
     # Add value labels on bars
-    for bar in bars1:
-        ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                f'{bar.get_height():.3f}', ha='center', va='bottom', fontsize=8)
-    for bar in bars2:
-        ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                f'{bar.get_height():.3f}', ha='center', va='bottom', fontsize=8)
+    for bars in [bars1, bars2, bars3]:
+        for bar in bars:
+            if bar.get_height() > 0:
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
+                        f'{bar.get_height():.3f}', ha='center', va='bottom', fontsize=8)
 
     fig.tight_layout()
     fig.savefig(f"{OUT}/query_time_comparison.png", bbox_inches="tight")
@@ -285,25 +307,29 @@ def fig7_index_stats():
 
 
 # ========================================================================
-# Figure 8: Trained vs Untrained Precision heatmap
+# Figure 8: Precision Heatmap across embedding methods
 # ========================================================================
-def fig8_trained_vs_untrained_heatmap():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
-    fig.suptitle("Precision@k Heatmap — Trained vs Untrained GIN + LSH", fontweight="bold")
+def fig8_precision_heatmap():
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    fig.suptitle("Precision@k Heatmap — Trained GIN vs Untrained GIN vs Graph2Vec (LSH)", fontweight="bold")
 
     # Build matrices
     trained_mat = np.zeros((len(DATASETS), len(K_VALS)))
     untrained_mat = np.zeros((len(DATASETS), len(K_VALS)))
+    g2v_mat = np.zeros((len(DATASETS), len(K_VALS)))
 
     for i, ds in enumerate(DATASETS):
         data = load_eval(ds)
+        g2v = load_eval_g2v(ds)
         for j, k in enumerate(K_VALS):
             trained_mat[i, j] = data["metrics"]["trained"][str(k)]["lsh"]["Precision@k"]
             untrained_mat[i, j] = data["metrics"]["untrained"][str(k)]["lsh"]["Precision@k"]
+            if g2v:
+                g2v_mat[i, j] = g2v[str(k)]["lsh"]["Precision@k"]
 
-    for ax, mat, title in [(ax1, trained_mat, "Trained GIN + LSH"),
-                            (ax2, untrained_mat, "Untrained GIN + LSH")]:
-        im = ax.imshow(mat, cmap="YlGnBu", aspect="auto", vmin=0.6, vmax=1.0)
+    for ax, mat, title in zip(axes, [trained_mat, untrained_mat, g2v_mat], 
+                              ["Trained GIN + LSH", "Untrained GIN + LSH", "Graph2Vec + LSH"]):
+        im = ax.imshow(mat, cmap="YlGnBu", aspect="auto", vmin=0.5, vmax=1.0)
         ax.set_xticks(range(len(K_VALS)))
         ax.set_xticklabels([f"k={k}" for k in K_VALS])
         ax.set_yticks(range(len(DATASETS)))
@@ -313,11 +339,12 @@ def fig8_trained_vs_untrained_heatmap():
         # Annotate cells
         for ii in range(len(DATASETS)):
             for jj in range(len(K_VALS)):
+                if mat[ii, jj] == 0: continue
                 ax.text(jj, ii, f"{mat[ii, jj]:.3f}", ha="center", va="center",
                         fontsize=10, fontweight="bold",
                         color="white" if mat[ii, jj] > 0.85 else "black")
 
-    fig.colorbar(im, ax=[ax1, ax2], shrink=0.8, label="Precision@k")
+    fig.colorbar(im, ax=axes.ravel().tolist(), shrink=0.8, label="Precision@k")
     fig.tight_layout()
     fig.savefig(f"{OUT}/precision_heatmap.png", bbox_inches="tight")
     plt.close(fig)
@@ -384,6 +411,6 @@ if __name__ == "__main__":
     fig5_lsh_ablation_L()
     fig6_w_grid_search()
     fig7_index_stats()
-    fig8_trained_vs_untrained_heatmap()
+    fig8_precision_heatmap()
     fig9_pipeline()
     print(f"\nAll figures saved to {OUT}/")

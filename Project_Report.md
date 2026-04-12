@@ -404,7 +404,7 @@ Key observations:
 ### 11.3 Precision Heatmap
 
 ![Heatmap](graph/precision_heatmap.png)
-*Figure 15: Trained vs Untrained precision heatmap.*
+*Figure 15: Precision heatmap across embedding methods.*
 
 ---
 
