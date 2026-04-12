@@ -11,7 +11,7 @@ Indian Institute of Technology Gandhinagar, Gujarat, India
 
 ## Abstract
 
-We present a graph retrieval pipeline that combines Graph Neural Network (GNN) based graph embeddings with Locality Sensitive Hashing (LSH) to enable approximate nearest neighbor search over graph corpora. We encode graphs into fixed-dimensional dense vector representations using a Graph Isomorphism Network (GIN) trained end-to-end with triplet loss, where similarity supervision is provided by an approximate Graph Edit Distance (GED) oracle. An LSH index built over these embeddings enables sublinear-time retrieval without exhaustive pairwise comparison. We evaluate on five standard graph benchmarks — MUTAG (188 graphs), PROTEINS (1,113), AIDS (2,000), IMDB-Binary (1,000), and Reddit-Binary (2,000) — using Precision@k, Recall@k, MAP, query time, and approximation quality metrics. Our results demonstrate that trained GIN embeddings with LSH retrieval achieve Precision@10 exceeding 0.78 across all datasets, with up to 90% approximation quality relative to brute-force search on 4 of 5 benchmarks. While our largest corpus contains only 2,000 graphs, scaling experiments show crossover estimated at N ≈ 840–5,000.
+We present a graph retrieval pipeline that combines Graph Neural Network (GNN) based graph embeddings with Locality Sensitive Hashing (LSH) to enable approximate nearest neighbor search over graph corpora. We encode graphs into fixed-dimensional dense vector representations using a Graph Isomorphism Network (GIN) trained end-to-end with triplet loss, where similarity supervision is provided by an approximate Graph Edit Distance (GED) oracle. An LSH index built over these embeddings provides the theoretical foundation for sublinear-time retrieval, though hashing overhead dominates at our test scale (N≤2,000). We evaluate on five standard graph benchmarks — MUTAG (188 graphs), PROTEINS (1,113), AIDS (2,000), IMDB-Binary (1,000), and Reddit-Binary (2,000) — using Precision@k, Recall@k, MAP, query time, and approximation quality metrics. Our results demonstrate that trained GIN embeddings with LSH retrieval achieve Precision@10 exceeding 0.78 across all datasets, with up to 90% approximation quality relative to brute-force search on 4 of 5 benchmarks. While our largest corpus contains only 2,000 graphs, scaling experiments show crossover estimated at N ≈ 840–5,000.
 
 **Keywords:** Graph Retrieval, Graph Embeddings, Locality Sensitive Hashing, Graph Neural Networks, Approximate Nearest Neighbor Search, Graph Edit Distance
 
@@ -21,13 +21,13 @@ We present a graph retrieval pipeline that combines Graph Neural Network (GNN) b
 
 Graphs are a powerful data structure used to represent relational information across social networks, molecular chemistry, knowledge bases, and program analysis. The problem of **graph retrieval** — finding graphs in a large corpus most similar to a given query graph — is fundamental but computationally challenging. Naive pairwise comparison using Graph Edit Distance (GED) or Maximum Common Subgraph (MCS) is NP-hard, making exhaustive search infeasible for large corpora.
 
-This motivates **dense vector representations** that capture graph structure. Combined with approximate nearest neighbor (ANN) techniques like LSH, this achieves sublinear-time retrieval while maintaining quality. To our knowledge, this is the first unified pipeline combining GIN-based contrastive learning with LSH retrieval evaluated across this range of benchmarks with rigorous oracle separation between training and evaluation.
+This motivates **dense vector representations** that capture graph structure. Combined with approximate nearest neighbor (ANN) techniques like LSH, this establishes the architecture for sublinear-time retrieval while maintaining quality. To our knowledge, this is the first unified pipeline combining GIN-based contrastive learning with LSH retrieval evaluated across this range of benchmarks with rigorous oracle separation between training and evaluation.
 
 Our specific contributions are:
 
 1. **An end-to-end retrieval pipeline** from raw graph data to approximate nearest neighbor search, with explicit separation between training oracles (beam search GED, B=5) and evaluation ground truth (exact GED / beam search B=20).
 2. **Empirical demonstration that trained GIN embeddings outperform untrained baselines by 5–15 percentage points** in Precision@10 across five benchmarks, confirmed visually via t-SNE embedding analysis.
-3. **Quantitative analysis of LSH failure modes**, identifying concentrated embedding distributions as the root cause of poor approximation quality on IMDB-Binary (AQ=0.44) and validating this through distance distribution analysis and candidate set measurements.
+3. **Quantitative analysis of LSH failure modes**, identifying candidate set starvation as the root cause of poor approximation quality on IMDB-Binary (AQ=0.44) and validating this through distance distribution analysis and candidate set measurements.
 4. **Comprehensive LSH hyperparameter ablation** including joint w×L grid search, memory-recall tradeoff curves, and empirical scaling experiments.
 
 The remainder of this report is organized as follows: Section 2 formalizes the retrieval problem, Section 3 describes the methodology, Sections 4–6 cover datasets, metrics, and baselines, Sections 7–8 present training diagnostics and oracle validation, Sections 9–13 report results and analysis, and Sections 14–17 discuss implementation, related work, limitations, and conclusions.
@@ -173,20 +173,20 @@ These four systems isolate specific contributions: Brute-Force vs LSH-ANN measur
 ### 7.1 Loss and Validation Curves
 
 ![Training Curves](graph/training_curves.png)
-*Figure 2: Left: Triplet loss vs epoch (convergence with noise from random sampling). Right: Precision@10 rises from 0.863 to ~0.90–0.92 by epoch 20, then stabilizes.*
+*Figure 2: Left: Triplet loss vs epoch (convergence with noise from random sampling). Right: Precision@10 peaks at 0.923 around epoch 20 then oscillates between 0.88 and 0.92.*
 
 - **Loss decreases from ~0.71 to ~0.50** over 50 epochs with high variance from random triplet sampling (many triplets trivially satisfy the margin).
-- **Precision@10 plateaus around epoch 20–25**, indicating 50 epochs is sufficient without overfitting. The plateau suggests hard negative mining could push performance further.
+- **Precision@10 peaks around epoch 20–25 then oscillates**, indicating 50 epochs is sufficient without overfitting. The instability suggests hard negative mining could provide consistent gradient signal.
 
 ### 7.2 Embedding Space Visualization
 
 ![t-SNE MUTAG](graph/tsne_mutag.png)
-*Figure 3: t-SNE of MUTAG. Untrained GIN (left) shows no class separation. Trained GIN (right) produces clearly separated clusters.*
+*Figure 3: t-SNE of MUTAG. Untrained GIN (left) shows no class separation. Trained GIN (right) produces improved but incomplete class separation.*
 
 ![t-SNE IMDB-Binary](graph/tsne_imdb_binary.png)
 *Figure 4: t-SNE of IMDB-Binary. Even after training, classes overlap — the model relies only on degree-based features, providing weaker discriminative signal than atom-type features.*
 
-The t-SNE plots show: (1) untrained GIN produces unstructured embeddings, (2) trained GIN creates meaningful clusters on MUTAG explaining high P@10=0.968, (3) IMDB-Binary's weaker separation explains its lower precision and poor LSH AQ.
+The t-SNE plots show: (1) untrained GIN produces unstructured embeddings, (2) trained GIN creates improved clustering on MUTAG explaining high P@10=0.968, (3) IMDB-Binary's weaker separation explains its lower precision and poor LSH AQ.
 
 ---
 
@@ -309,7 +309,9 @@ For IMDB-Binary, the untrained LSH model (P@10=0.870) **outperforms** the traine
 | Untrained BF | 0.859 | — |
 | Untrained LSH | 0.870 | 0.819 |
 
-**Training does improve embedding quality** — trained BF (0.886) > untrained BF (0.859). The problem is that **LSH indexes trained IMDB-Binary embeddings very poorly** (AQ=0.438) compared to untrained embeddings (AQ=0.819). Why? Training compresses IMDB-Binary embeddings into a narrow band (L2 distance std=0.065), making hash bucket boundaries cut through clusters of similar graphs. The untrained embeddings, being more spread out, are actually easier for LSH to index despite being lower quality. This is a case where **the indexing method (LSH) is the bottleneck, not the embeddings** — switching to HNSW would recover the trained BF advantage.
+**Training does improve embedding quality** — trained BF (0.886) > untrained BF (0.859). The problem is that **LSH indexes trained IMDB-Binary embeddings very poorly** (AQ=0.438) compared to untrained embeddings (AQ=0.819). Why? Training pushes IMDB-Binary embeddings into a configuration that starves LSH buckets (retrieving only 2.9% of corpus) despite preserving correct distance ranking (as evidenced by Brute-Force). This is a case where **the indexing method (LSH) is the bottleneck, not the embeddings** — switching to HNSW would recover the trained BF advantage.
+
+**MAP Ordering Anomaly on MUTAG:** Note that although trained GIN achieves the highest Precision@10 (0.968) and Brute-Force the highest MAP (0.121) on MUTAG, the *Trained LSH* setup exhibits a surprisingly low MAP (0.081) compared to Untrained LSH (0.085) and Graph2Vec (0.087). This indicates that while trained LSH captures highly precise matching graphs in its top-10, the exact rank-ordering of those retrieved graphs carries more penalty than the untrained baselines.
 
 ### 9.6 Graph2Vec Comparison
 
@@ -342,12 +344,7 @@ Overall, GED-supervised contrastive training with GIN provides consistent improv
 
 ### 10.2 Why IMDB-Binary Has Poor AQ
 
-**1. Concentrated pairwise distances.**
-
-![Distance Distribution](graph/distance_distribution.png)
-*Figure 9: MUTAG distances span 0–1.8 (std=0.432). IMDB-Binary distances are concentrated in 1.25–1.55 (std=0.065). LSH bucket boundaries cannot separate near vs far neighbors in such narrow distributions.*
-
-**2. Tiny candidate sets.**
+**1. Candidate set starvation.**
 
 | Dataset | N | Avg |C| | |C|/N |
 |---------|---|---------|------|
@@ -357,10 +354,15 @@ Overall, GED-supervised contrastive training with GIN provides consistent improv
 | IMDB-B | 1,000 | **28.9** | **2.9%** |
 | Reddit-B | 2,000 | 1,176.6 | 58.8% |
 
-IMDB-B retrieves only 28.9 candidates (2.9% of corpus) — true top-10 neighbors are often excluded entirely.
+IMDB-B retrieves only 28.9 candidates (2.9% of corpus) — true top-10 neighbors are often excluded entirely before exact distance re-ranking even begins, starving the system of valid answers.
 
 ![Candidate Sizes](graph/candidate_set_sizes.png)
-*Figure 10: LSH candidate set sizes.*
+*Figure 9: LSH candidate set sizes.*
+
+**2. Distance distributions.**
+
+![Distance Distribution](graph/distance_distribution.png)
+*Figure 10: IMDB-Binary L2 distances are broad (mean=4.314, std=2.433) compared to MUTAG (mean=3.060, std=1.762). Training pushes IMDB-Binary embeddings into a configuration where LSH buckets fail to capture meaningful neighborhoods effectively, causing the aforementioned candidate set starvation.*
 
 **3. Increasing L helps, but slowly.**
 
@@ -414,6 +416,8 @@ Key observations:
 
 ![w Search](graph/w_grid_search.png)
 *Figure 16: Recall@10 vs bucket width w.*
+
+*Note on w selection:* For datasets like Reddit-Binary, PROTEINS, and AIDS, differences in Recall@10 across w ∈ [0.5, 4.0] are negligible (e.g. ~0.008–0.009). While specific "best" w values are reported based on argmax, performance is highly robust to w for these sets.
 
 ### 12.2 w × L Joint Grid Search (MUTAG)
 
@@ -550,7 +554,7 @@ We chose **random projection LSH** [2,3] for simplicity and parameter interpreta
 
 ## 16. Discussion & Limitations
 
-**IMDB-Binary: when training hurts LSH.** The most surprising result is that trained LSH underperforms untrained LSH on IMDB-Binary (Section 9.5). The root cause is not that training is harmful — brute-force confirms training improves embedding quality — but that contrastive training produces a concentrated embedding distribution (distance std=0.065) that random projection LSH cannot effectively index. Without node features, degree-based encoding produces embeddings where all graphs live in a narrow region of the hypersphere. This is a fundamental mismatch between the distribution shape and the indexing method, not a failure of the embedding itself.
+**IMDB-Binary: when training hurts LSH.** The most surprising result is that trained LSH underperforms untrained LSH on IMDB-Binary (Section 9.5). The root cause is not that training is harmful — brute-force confirms training improves embedding quality — but that contrastive training produces an embedding distribution where LSH hash collisions are extremely rare (only 2.9% of corpus retrieved). Without node features, degree-based encoding produces embeddings that severely starve LSH bucket matching. This is a fundamental mismatch between the distribution shape and the indexing method, not a failure of the embedding itself.
 
 **What graph types would break this pipeline?** Beyond IMDB-Binary, we expect poor performance on any dataset where (1) graphs lack discriminative node features and have similar degree distributions, (2) the GED oracle is unreliable (e.g., graphs with >60 nodes where we fall back to label proxy — Reddit-Binary uses this for 96.7% of pairs), or (3) graph sizes vary dramatically within a class, causing mean pooling to conflate structural differences with size differences.
 
@@ -567,14 +571,14 @@ We chose **random projection LSH** [2,3] for simplicity and parameter interpreta
 
 ## 17. Conclusion
 
-**Answering RQ1** (Does training improve retrieval?): **Yes, substantially.** Trained GIN embeddings improve Precision@10 by 5–15 percentage points over untrained baselines across all five datasets (MUTAG: 0.968 vs 0.869; PROTEINS: 0.790 vs 0.647; Reddit-Binary: 0.840 vs 0.741). The improvement is confirmed visually by t-SNE plots showing clear class clustering in trained embeddings vs random scatter in untrained ones.
+**Answering RQ1** (Does training improve retrieval?): **Yes, substantially.** Trained GIN embeddings improve Precision@10 by 5–15 percentage points over untrained baselines across all five datasets (MUTAG: 0.968 vs 0.869; PROTEINS: 0.790 vs 0.647; Reddit-Binary: 0.840 vs 0.741). The improvement is confirmed visually by t-SNE plots showing improved class clustering in trained embeddings vs random scatter in untrained ones.
 
-**Answering RQ2** (How does LSH compare to exact search?): **LSH closely matches brute-force quality on 4/5 datasets** (approximation quality 0.71–0.95) but fails on IMDB-Binary (AQ=0.44) due to concentrated embedding distributions. At our test scale (N ≤ 2,000), LSH does not yet achieve a net speedup over brute-force — the crossover is estimated at N ≈ 840–5,000 based on scaling experiments. LSH's value is therefore prospective: it provides the architectural foundation for scaling to corpora where brute-force becomes prohibitive.
+**Answering RQ2** (How does LSH compare to exact search?): **LSH closely matches brute-force quality on 4/5 datasets** (approximation quality 0.71–0.95) but fails on IMDB-Binary (AQ=0.44) due to candidate set starvation. At our test scale (N ≤ 2,000), LSH does not yet achieve a net speedup over brute-force — the crossover is estimated at N ≈ 840–5,000 based on scaling experiments. LSH's value is therefore prospective: it provides the architectural foundation for scaling to corpora where brute-force becomes prohibitive.
 
 Additional key findings:
 - **GED oracle (B=5) is sufficiently accurate** (Pearson r=0.823 with exact GED, 79% ranking agreement).
 - **Bucket width w is the dominant LSH hyperparameter** (38.5-point precision effect vs L's 15.6-point effect in joint grid search).
-- **Training can hurt LSH retrieval** when it produces concentrated embeddings (IMDB-Binary), highlighting that embedding quality and indexability can conflict.
+- **Training can hurt LSH retrieval** when it produces embeddings that starve LSH buckets (IMDB-Binary), highlighting that embedding quality and indexability can conflict.
 
 **Future Work:**
 - **Hard negative triplet mining** to improve gradient signal during training — the current random sampling leaves performance on the table, especially in later epochs where the loss plateaus.
