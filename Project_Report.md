@@ -1,7 +1,7 @@
 # CS 328 — Introduction to Data Science
 # Learning Representations for Graph Retrieval
 
-**Omm Arindam** &emsp; **Rajput Priyanshu** &emsp; **Ramji Purwar**
+**Omm Arindam** &emsp; **Priyanshu Raj** &emsp; **Ramji Purwar**
 
 24110229@iitgn.ac.in &emsp; priyanshu.raj@iitgn.ac.in &emsp; ramji.purwar@iitgn.ac.in
 
