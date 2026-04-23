@@ -2,6 +2,8 @@
 
 This repository contains the implementation of a scalable graph retrieval system that combines Graph Neural Network (GNN) based graph embeddings with Locality Sensitive Hashing (LSH). It enables approximate nearest neighbor search over large graph corpora without exhaustive pairwise comparison, addressing the NP-hard nature of exact graph similarity measures like Graph Edit Distance (GED).
 
+**🌍 Live Demo:** [Graph Retrieval Engine](https://huggingface.co/spaces/Ramji-Purwar/graph-retrieval)
+
 ## Motivation & Goal
 
 Finding the most structurally and semantically similar graphs from a large corpus for a given query graph is a critical problem in domains like molecular chemistry, social networks, and biological analysis. Naive pairwise comparisons using polynomial-time graph similarity measures are computationally intractable for large datasets. 
@@ -27,21 +29,6 @@ The pipeline is evaluated on multiple datasets (MUTAG, PROTEINS, IMDB-B, Reddit-
 - **Approximation Quality**
 
 *Ground-truth for evaluation is computed using exact GED for small graphs (≤30 nodes) and a separate high-quality beam search for larger datasets.*
-
-## Interactive Visualization Web App
-
-While the core of this project is the retrieval pipeline, we also include a lightweight web application for visualizing graph topology and querying the index interactively.
-
-### Setup & Run
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Start the visualization app locally:
-   ```bash
-   python app.py
-   ```
-3. Open your browser and navigate to `http://127.0.0.1:5000/`.
 
 ## Acknowledgments
 This project was proposed and guided by Prof. Anirban Dasgupta, Department of Computer Science and Engineering, IIT Gandhinagar. 
